@@ -1,0 +1,21 @@
+{
+    "name": "coffreo/challenge",
+    "description": "Recruitement challenge",
+    "type": "project",
+    "license": "proprietary",
+    "autoload": {
+        "psr-4": {
+            "Coffreo\\Challenge\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Arthur JAMBON",
+            "email": "ajambon@coffreo.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php-amqplib/php-amqplib": "^3"
+    }
+}
