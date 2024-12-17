@@ -1,2 +1,15 @@
+# IDE
 /.idea
-/vendor
+
+# Local configuration
+/.env.local
+/.env.*.local
+
+# Temporary files
+/*.bak
+/.phpunit.result.cache
+/.php-cs-fixer.cache
+
+# Third Party libraries
+/composer.phar
+/vendor/
