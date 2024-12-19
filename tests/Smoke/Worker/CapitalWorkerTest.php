@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace tests\Coffreo\Challenge\Smoke\Worker;
 
-use Coffreo\Challenge\MessageQueue\Broker;
-use Coffreo\Challenge\MessageQueue\Message;
-use Coffreo\Challenge\Worker\CapitalWorker;
+use Coffreo\Challenge\Amqp\AmqpChannel;
+use Coffreo\Challenge\MessageHandler\CapitalNamePublished;
 use PHPUnit\Framework\TestCase;
 use tests\Coffreo\Challenge\AppSingleton;
 
@@ -18,15 +17,13 @@ class CapitalWorkerTest extends TestCase
     public function testItConsumesValidCapitalNames(): void
     {
         $app = AppSingleton::get();
-        $broker = $app->container->get(Broker::class);
+        $capitalAmqpChannel = $app->container->get('Capital'.AmqpChannel::class);
 
         $payloads = ['London', 'Paris', 'Wahsington D.C.'];
         foreach ($payloads as $payload) {
-            $broker->publish(new Message(
-                routingKey: 'capital',
-                payload: $payload,
-                exchanges: 'router',
-            ));
+            $capitalAmqpChannel->publish(
+                new CapitalNamePublished($payload),
+            );
         }
 
         // Wait 2 second per message to process (req/s is very low: 0.8)
@@ -39,15 +36,13 @@ class CapitalWorkerTest extends TestCase
     public function testItIgnoresInvalidCapitalNames(): void
     {
         $app = AppSingleton::get();
-        $broker = $app->container->get(Broker::class);
+        $capitalAmqpChannel = $app->container->get('Capital'.AmqpChannel::class);
 
         $payloads = ['FR', 'United Kingdom', 'Kingston-Upon-Thames', '42', '', "\n", '$'];
         foreach ($payloads as $payload) {
-            $broker->publish(new Message(
-                routingKey: 'capital',
-                payload: $payload,
-                exchanges: 'router',
-            ));
+            $capitalAmqpChannel->publish(
+                new CapitalNamePublished($payload),
+            );
         }
 
         // Wait 2 second per message to process (req/s is very low: 0.8)
@@ -60,8 +55,8 @@ class CapitalWorkerTest extends TestCase
     public function testItPicksUpTheSlack(): void
     {
         $app = AppSingleton::get();
+        $capitalAmqpChannel = $app->container->get('Capital'.AmqpChannel::class);
         $capitalWorker = $app->container->get(CapitalWorker::class);
-        $broker = $app->container->get(Broker::class);
 
         // Stopping the worker
         $capitalWorker->stop();
@@ -69,11 +64,9 @@ class CapitalWorkerTest extends TestCase
         // Publishing messages, with no active consumers
         $payloads = ['Cairo', 'Tokyo', 'Brasília'];
         foreach ($payloads as $payload) {
-            $broker->publish(new Message(
-                routingKey: 'capital',
-                payload: $payload,
-                exchanges: 'router',
-            ));
+            $capitalAmqpChannel->publish(
+                new CapitalNamePublished($payload),
+            );
         }
 
         // Restarting the worker

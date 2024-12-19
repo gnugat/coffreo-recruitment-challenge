@@ -53,6 +53,7 @@ will apply to them both:
   with poor organization of logic (different concerns are mixed)
   and tight coupling (causes limited reusability and testing challenges)
     + should use a logger for debugging (in an asynchronous manner, eg AWS S3, ELK, etc)
+    + should use log to stderr, as per standard practice
     + should have an automated testsuite, PHPUnit is a good industry standard
     + should have Coding Standards rules agreed, PHP CS Fixer to enforce them
     + should have Static Analysis tool, phpstan is a good industry standard

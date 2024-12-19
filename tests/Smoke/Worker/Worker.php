@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Coffreo\Challenge\MessageQueue;
+namespace tests\Coffreo\Challenge\Smoke\Worker;
 
 interface Worker
 {

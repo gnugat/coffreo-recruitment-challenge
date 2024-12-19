@@ -32,13 +32,15 @@ start: build up ## Build and start the containers
 down: ## Stop the docker hub
 	@$(DOCKER_COMP) down --remove-orphans
 
+logs: ## Show live logs, pass the parameter "c=" to add options, example: make logs c='challenge'
+	@$(eval c ?=)
+	@$(DOCKER_COMP) logs --tail=0 --follow $(if $(c),$(c),)
+
+## —— PHP 🐘 ———————————————————————————————————————————————————————————————————
 bash-php: ## Connect to the challenge (PHP) container via bash so up and down arrows go to previous commands
 	@$(PHP_CONT) bash
 
-bash-rabbitmq: ## Connect to the RabbitMQ container via bash so up and down arrows go to previous commands
-	@$(RABBITMQ_CONT)) bash
-
-## —— Quality 🛂 ————————————————————————————————————————————————————————————————
+## —— Quality 🛂 ———————————————————————————————————————————————————————————————
 test: ## Start tests with phpunit, pass the parameter "c=" to add options to phpunit, example: make test c="--group smoke --stop-on-failure"
 	@$(eval c ?=)
 	@$(PHPUNIT) $(if $(c),$(c),)
@@ -46,12 +48,6 @@ test: ## Start tests with phpunit, pass the parameter "c=" to add options to php
 fix-cs: ## Start PHP CS Fixer, pass the parameter "c=" to add options, example: make fix-cs c="--dry-run"
 	@$(eval c ?=)
 	@$(PHP_CS_FIXER) fix $(if $(c),$(c),)
-
-#  Legacy / Aliases ————————————————————————————————————————————————————————————
-docker-build:
-	@$(DOCKER_COMP) build
-docker-run: up
-docker-sh: bash-php
 
 ## —— Composer 🧙 ——————————————————————————————————————————————————————————————
 composer: ## Run composer, pass the parameter "c=" to run a given command, example: make composer c='require --dev phpunit/phpunit:^10.5'
@@ -62,4 +58,14 @@ vendor: ## Install vendors according to the current composer.lock file
 vendor: c=install --prefer-dist --no-dev --no-progress --no-scripts --no-interaction
 vendor: composer
 
+## —— RabbitMQ 🐇 ——————————————————————————————————————————————————————————————
+
+bash-rabbitmq: ## Connect to the RabbitMQ container via bash so up and down arrows go to previous commands
+	@$(RABBITMQ_CONT)) bash
+
+#  Legacy / Aliases ————————————————————————————————————————————————————————————
+docker-build:
+	@$(DOCKER_COMP) build
+docker-run: up
+docker-sh: bash-php
 ## —————————————————————————————————————————————————————————————————————————————

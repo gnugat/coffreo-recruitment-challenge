@@ -2,20 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Coffreo\Challenge\Worker;
+namespace tests\Coffreo\Challenge\Smoke\Worker;
 
-use Coffreo\Challenge\MessageQueue\Worker;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
 /**
- * Consumes capital name from a MessageQueue;
- * Retrieves its capital data from restcountries.com API.
- * -- supposedly does something with the Capital data?
+ * Consumes country code from a MessageQueue;
+ * Retrieves its capital name from restcountries.com API;
+ * Publishes capital name to the MessageQueue.
  */
-class CapitalWorker implements Worker
+class CountryWorker implements Worker
 {
-    private const LOG_FILE = '/tmp/capital.log';
+    private const LOG_FILE = '/tmp/country.log';
 
     private ?Process $process = null;
 
@@ -33,8 +32,8 @@ class CapitalWorker implements Worker
             touch(self::LOG_FILE);
         }
 
-        // Starts capital worker in the background
-        $this->process = new Process(['php', __DIR__.'/../capital.php']);
+        // Starts country worker in the background
+        $this->process = new Process(['php', __DIR__.'/../../../src/country.php']);
         $this->process->start(function ($type, $buffer) {
             file_put_contents(self::LOG_FILE, $buffer, \FILE_APPEND);
         });

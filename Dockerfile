@@ -1,4 +1,4 @@
-FROM php:8.0-bullseye AS php
+FROM php:8.2-bullseye AS php
 
 # Install dependencies
 RUN set -eux \
@@ -15,11 +15,14 @@ RUN set -eux \
     && apt-get install -y --no-install-recommends \
         libzip-dev \
         libsodium-dev \
+        librabbitmq-dev \
     && docker-php-ext-install \
       zip \
       sodium \
       bcmath \
       sockets \
+    && pecl install amqp \
+    && docker-php-ext-enable amqp \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

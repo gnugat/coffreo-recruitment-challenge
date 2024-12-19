@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace tests\Coffreo\Challenge\Framework;
 
-use Coffreo\Challenge\Worker\CapitalWorker;
-use Coffreo\Challenge\Worker\CountryWorker;
 use PHPUnit\Framework\TestListener;
 use PHPUnit\Framework\TestListenerDefaultImplementation;
 use PHPUnit\Framework\TestSuite;
 use tests\Coffreo\Challenge\AppSingleton;
+use tests\Coffreo\Challenge\Smoke\Worker\CapitalWorker;
+use tests\Coffreo\Challenge\Smoke\Worker\CountryWorker;
+use tests\Coffreo\Challenge\Smoke\Worker\WorkerBuilder;
 
 /**
  * Makes sure the workers are running for the smoke testsuite,
@@ -32,6 +33,7 @@ class RunWorkersForSmokeTestsuiteListener implements TestListener
             return;
         }
         $app = AppSingleton::get();
+        WorkerBuilder::build($app->container);
         $workers = [];
         $workers[] = $app->container->get(CapitalWorker::class);
         $workers[] = $app->container->get(CountryWorker::class);

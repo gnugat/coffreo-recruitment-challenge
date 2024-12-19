@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace tests\Coffreo\Challenge;
 
 use Coffreo\Challenge\App;
-use Coffreo\Challenge\Container;
+use Coffreo\Challenge\DependencyInjection\Container;
 
 /**
  * Provides App for the tests, as a singleton for performance reasons:
@@ -21,10 +21,8 @@ class AppSingleton
         if (null !== self::$app) {
             return self::$app;
         }
-        self::$app = new App(
-            new Container(),
-        );
-        self::$app->container->build();
+        self::$app = new App(new Container(), 'test');
+        self::$app->build();
 
         return self::$app;
     }

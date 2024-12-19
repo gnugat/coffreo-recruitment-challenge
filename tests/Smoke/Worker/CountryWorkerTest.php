@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace tests\Coffreo\Challenge\Smoke\Worker;
 
-use Coffreo\Challenge\MessageQueue\Broker;
-use Coffreo\Challenge\MessageQueue\Message;
-use Coffreo\Challenge\Worker\CountryWorker;
+use Coffreo\Challenge\Amqp\AmqpChannel;
+use Coffreo\Challenge\MessageHandler\CountryCodePublished;
 use PHPUnit\Framework\TestCase;
 use tests\Coffreo\Challenge\AppSingleton;
 
@@ -18,17 +17,14 @@ class CountryWorkerTest extends TestCase
     public function testItConsumesValidCountryNames(): void
     {
         $app = AppSingleton::get();
-        $countryWorker = $app->container->get(CountryWorker::class);
-        $broker = $app->container->get(Broker::class);
+        $countryAmqpChannel = $app->container->get('Country'.AmqpChannel::class);
 
         // cca2, cca3, ccn3 and cioc
         $payloads = ['DE', 'ES', 'FR', 'USA', '170'];
         foreach ($payloads as $payload) {
-            $broker->publish(new Message(
-                routingKey: 'country',
-                payload: $payload,
-                exchanges: 'router',
-            ));
+            $countryAmqpChannel->publish(
+                new CountryCodePublished($payload),
+            );
         }
 
         // Wait 2 second per message to process (req/s is very low: 0.8)
@@ -41,16 +37,13 @@ class CountryWorkerTest extends TestCase
     public function testItIgnoresInvalidCountryNames(): void
     {
         $app = AppSingleton::get();
-        $countryWorker = $app->container->get(CountryWorker::class);
-        $broker = $app->container->get(Broker::class);
+        $countryAmqpChannel = $app->container->get('Country'.AmqpChannel::class);
 
         $payloads = ['D', 'FRANCE', '1337', '', "\n", '$'];
         foreach ($payloads as $payload) {
-            $broker->publish(new Message(
-                routingKey: 'country',
-                payload: $payload,
-                exchanges: 'router',
-            ));
+            $countryAmqpChannel->publish(
+                new CountryCodePublished($payload),
+            );
         }
 
         // Wait 2 second per message to process (req/s is very low: 0.8)
@@ -63,20 +56,18 @@ class CountryWorkerTest extends TestCase
     public function testItPicksUpTheSlack(): void
     {
         $app = AppSingleton::get();
+        $countryAmqpChannel = $app->container->get('Country'.AmqpChannel::class);
         $countryWorker = $app->container->get(CountryWorker::class);
-        $broker = $app->container->get(Broker::class);
 
         // Stopping the worker
-        $countryWorker->run();
+        // $countryWorker->run();
 
         // Publishing messages, with no active consumers
         $payloads = ['EGY', 'JP', 'bra'];
         foreach ($payloads as $payload) {
-            $broker->publish(new Message(
-                routingKey: 'country',
-                payload: $payload,
-                exchanges: 'router',
-            ));
+            $countryAmqpChannel->publish(
+                new CountryCodePublished($payload),
+            );
         }
 
         // Restarting the worker

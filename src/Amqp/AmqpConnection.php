@@ -2,13 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Coffreo\Challenge\MessageQueue\RabbitMq;
+namespace Coffreo\Challenge\Amqp;
 
-/**
- * Creates an instance of AmqpBroker, from a DSN configuration.
- */
-class AmqpBrokerFactory
+use PhpAmqpLib\Channel\AMQPChannel;
+use PhpAmqpLib\Connection\AMQPStreamConnection;
+
+class AmqpConnection
 {
+    private function __construct(
+        private AMQPStreamConnection $amqpConnection,
+    ) {
+    }
+
     /**
      * The `amqp` URI scheme:
      *
@@ -28,17 +33,22 @@ class AmqpBrokerFactory
      *
      * @see https://www.rabbitmq.com/docs/uri-spec
      */
-    public static function fromDsn(string $dsn): AmqpBroker
+    public static function fromDsn(string $dsn): self
     {
         $params = parse_url($dsn);
         $pathParts = isset($params['path']) ? explode('/', trim($params['path'], '/')) : [];
 
-        return new AmqpBroker(
+        return new self(new AMQPStreamConnection(
             host: $params['host'] ?? 'localhost',
             port: $params['port'] ?? (str_starts_with($dsn, 'amqps://') ? 5671 : 5672),
             user: rawurldecode($params['user'] ?? ''),
             password: rawurldecode($params['pass'] ?? ''),
             vhost: rawurldecode($pathParts[0] ?? '/'),
-        );
+        ));
+    }
+
+    public function channel(): AMQPChannel
+    {
+        return $this->amqpConnection->channel();
     }
 }
