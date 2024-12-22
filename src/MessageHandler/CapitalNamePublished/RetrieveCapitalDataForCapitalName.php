@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Coffreo\Challenge\MessageHandler\CapitalNamePublished;
 
 use Psr\Log\LoggerInterface;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class RetrieveCapitalDataForCapitalName
 {
@@ -29,11 +29,7 @@ class RetrieveCapitalDataForCapitalName
                 'error' => $e->getMessage(),
             ]);
 
-            throw new \InvalidArgumentException(
-                "Invalid capital name: should be an existing one, \"{$capitalName}\" given",
-                $e->getode(),
-                $e,
-            );
+            throw new \InvalidArgumentException("Invalid capital name: should be an existing one, \"{$capitalName}\" given", $e->getode(), $e);
         }
         $countryData = json_decode($response->getContent(), true);
         $capitalData = [

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Coffreo\Challenge\MessageHandler\CountryCodePublished;
 
 use Psr\Log\LoggerInterface;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class RetrieveCapitalNameForCountryCode
 {
@@ -29,11 +29,7 @@ class RetrieveCapitalNameForCountryCode
                 'error' => $e->getMessage(),
             ]);
 
-            throw new \InvalidArgumentException(
-                "Invalid country code: should be an existing one, \"{$countryCode}\" given",
-                $e->getode(),
-                $e,
-            );
+            throw new \InvalidArgumentException("Invalid country code: should be an existing one, \"{$countryCode}\" given", $e->getode(), $e);
         }
         $countryData = json_decode($response->getContent(), true);
         $capitalName = $countryData['capital'][0] ?? null;
@@ -43,9 +39,7 @@ class RetrieveCapitalNameForCountryCode
                 'capital_name' => $capitalName,
             ]);
 
-            throw new \InvalidArgumentException(
-                "Invalid country code: should be an existing one, \"{$countryCode}\" given"
-            );
+            throw new \InvalidArgumentException("Invalid country code: should be an existing one, \"{$countryCode}\" given");
         }
 
         $this->logger->debug('retrieved capital name for country code', [

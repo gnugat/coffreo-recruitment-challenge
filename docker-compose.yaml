@@ -1,11 +1,36 @@
 services:
-    challenge:
-        build:
-            target: php
-        volumes:
-            - .:/var/www
+  # PHP container, for dev environment
+  challenge:
+    build:
+      context: .
+      target: php_dev
+    volumes:
+      - .:/var/www
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
 
-    rabbitmq:
-        image: rabbitmq:3-management
-        ports:
-            - 15672:15672
+  # PHP container, for prod environment, to run the workers
+  challenge_prod:
+    build:
+      context: .
+      target: php_prod
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+volumes:
+  rabbitmq_data:
